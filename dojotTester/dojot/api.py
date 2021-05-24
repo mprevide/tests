@@ -43,8 +43,6 @@ class DojotAPI():
 
         _, res = DojotAPI.call_api(requests.post, args)
 
-        print(res)
-
         LOGGER.debug(".. retrieved JWT")
         return res["access_token"]
 
