@@ -155,7 +155,7 @@ module.exports = () => {
 
                 await client.end();
             } catch (e) {
-                console.log(`error when trying publish in topic /${tenant}/${deviceId}/attrs to ${env.mqtt_host}`, e.stack);
+                console.log(`error when trying publish in topic ${tenant}:${deviceId}/attrs to ${env.mqtt_host}`, e.stack);
             }
         },
 
