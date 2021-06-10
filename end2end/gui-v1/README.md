@@ -13,10 +13,13 @@ node install
 node run test:clearDb
 ```
 
-There are 2 types of scenarios: Basic and Advanced.
+
+There are 3 types of scenarios: Flow Basic, Basic and Advanced.
 In order to run each scenario, run the following command:
+Flow Basic is interesting because it does the minimum flow tests, template create, device create, and sending messages via mqtt in an unsafe way.
 
 ```shell
+node run test:flowbasic
 node run test:basic
 node run test:adv
 ```
