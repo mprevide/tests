@@ -1,5 +1,5 @@
 const config = require('./default.conf');
-// clearDb won't work anymore
-// config.clearDb = true;
+
+config.tests = './Scenarios/flow_creation_and_execution_test.js',
 
 exports.config = config;

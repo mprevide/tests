@@ -3,7 +3,7 @@ const request = require('sync-request');
 const env = require('./env.conf');
 
 module.exports = () => {
-    let jwt;
+    // let jwt;
 
     return actor({
 
@@ -11,11 +11,17 @@ module.exports = () => {
             I.amOnPage(env.dojot_host);
             I.setEnglishLanghage();
             I.refreshPage();
-            I.wait(3);
-            I.see('Sign in');
+            // I.wait(10);
+            I.waitForText('Tenant');
+            I.see('Welcome');
+            I.fillField('tenant', 'admin');
+            I.click('Go to login page');
+            I.wait(3)
+            I.see('Sign in to your account');
             I.fillField('Username', 'admin');
-            I.fillField('Password', 'admin');
-            I.click('Login');
+            I.fillField('Password', 'Dojot@2021');
+            I.wait(1)
+            I.click('Sign In');
             I.wait(10);
             if (clearDb) { I.clearDatabase(); }
             I.refreshPage();
@@ -53,21 +59,25 @@ module.exports = () => {
                 .withAttr({ name }), value);
         },
 
+        // THIS will be  not work anymore
+        // because there is not jwt in browser anymore
         async getJWT() {
             return this.executeScript(() => localStorage.getItem('jwt'));
         },
 
         async requestJSON(resource, myJson, method = 'POST', querystring = '') {
-            jwt = await this.executeScript(() => localStorage.getItem('jwt'));
-            let endPoint = `${env.dojot_host}/${resource}`;
+            // THIS will be  not work anymore
+            // because there is not jwt in browser anymore
+            //jwt = await this.executeScript(() => localStorage.getItem('jwt'));
+            let endPoint = `${env.dojot_host}${resource}`;
 
             if (querystring && querystring.length > 0) {
                 endPoint += `?${querystring}`;
             }
             const response = request(method, endPoint, {
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                },
+                // headers: {
+                //     Authorization: `Bearer ${jwt}`,
+                // },
                 json: myJson,
             });
 
@@ -75,13 +85,15 @@ module.exports = () => {
         },
 
         async deleteXHR(resource, querystring) {
-            jwt = await this.executeScript(() => localStorage.getItem('jwt'));
+            // THIS will be  not work anymore 
+            // because there is not jwt in browser anymore
+            // jwt = await this.executeScript(() => localStorage.getItem('jwt'));
 
             const method = 'DELETE';
-            const response = request(method, `${env.dojot_host}/${resource}?${querystring}`, {
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                },
+            const response = request(method, `${env.dojot_host}/backstage/v1/proxy/${resource}?${querystring}`, {
+                // headers: {
+                //     Authorization: `Bearer ${jwt}`,
+                // },
                 json: myJson,
             });
 

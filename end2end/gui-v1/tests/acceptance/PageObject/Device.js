@@ -173,6 +173,10 @@ module.exports = {
         I.click(locate('a').withAttr({ href: `#/device/id/${deviceId}/detail` }));
     },
 
+    clickDetailsDeviceByDeviceName(name) {
+        I.click(locate('a').inside(locate('.card-size  span').withAttr({ title: name })));
+    },
+
     selectAttr(attr) {
         I.click(locate('div').withAttr({ title: attr }));
     },

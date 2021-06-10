@@ -6,11 +6,55 @@ Before((login) => {
     login('admin');
 });
 
-Scenario('@basic: Creating a simple flow', async (I, Flow, Device, Notification) => {
+Scenario('@basic: Creating a simple flow', async (I, Flow, Device, Notification, Template) => {
     Flow.init(I);
+    Template.init(I);
+    Device.init(I);
 
-    // TODO: createDevice should be in step_files, Commons or Device
-    const deviceId = await Flow.createDevice();
+
+    Template.clickOpenTemplatePage();
+    Template.clickCreateNew();
+
+    Template.fillNameTemplate('Template');
+
+    Template.addAttr(
+        'input',
+        Template.AttributeType.dynamic,
+        Template.AttributeValueType.string,
+        []
+    );
+
+    Template.addAttr(
+        'output',
+        Template.AttributeType.dynamic,
+        Template.AttributeValueType.string,
+        []
+    );
+    Template.clickSave();
+
+    Device.clickOpenDevicePage();
+    //Device.change64QtyToShowPagination();
+
+    I.refreshPage();
+
+    Device.clickCreateNew();
+    Device.fillNameDevice('String device');
+    Device.clickAddOrRemoveTemplate();
+    Device.clickToSelectTemplate('Template');
+    Device.clickBack();
+    Device.clickSave();
+
+    Device.seeHasCreated();
+
+    I.wait(5)
+
+    I.refreshPage();
+
+    Device.clickDetailsDeviceByDeviceName('String device');
+
+
+    let url = await I.grabCurrentUrl();
+    const deviceId=url.substring(url.lastIndexOf('/id/') + 4, url.lastIndexOf('/detail'));
 
     Flow.clickOpen();
     Flow.clickCreateNew();
@@ -22,7 +66,6 @@ Scenario('@basic: Creating a simple flow', async (I, Flow, Device, Notification)
     Flow.addChange();
     Flow.addDeviceOutput();
     Flow.addNotification();
-
 
     await Flow.connectFlows();
 
@@ -55,9 +98,15 @@ Scenario('@basic: Creating a simple flow', async (I, Flow, Device, Notification)
     Flow.clickOnSave();
     Flow.seeFlowHasCreated();
 
+    I.refreshPage();
+
+    I.wait(2);
     Device.openDevicesPage();
-    Device.change64QtyToShowPagination();
-    Device.clickDetailsDevice(deviceId);
+    I.refreshPage();
+    I.wait(5);
+
+    Device.clickDetailsDeviceByDeviceName('String device');
+    // Device.clickDetailsDevice(deviceId);
     Device.selectAttr('input');
 
     await Device.selectAttrSync('output');
