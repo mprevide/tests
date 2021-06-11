@@ -11,7 +11,7 @@ module.exports = () => {
             I.amOnPage(env.dojot_host);
             I.setEnglishLanghage();
             I.refreshPage();
-            // I.wait(10);
+            I.wait(20);
             I.waitForText('Tenant');
             I.see('Welcome');
             I.fillField('tenant', 'admin');
