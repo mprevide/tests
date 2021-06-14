@@ -1,5 +1,7 @@
 # How run
 
+__Note__ You need to enable the `dev-test-cli` client in the keycloak. For security reasons it is disabled by default, after use it is recommended to disable it again.
+
 ``
 mkdir ~/virtualenv-dojot-tests #only the first time
 ``
