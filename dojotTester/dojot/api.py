@@ -2,13 +2,12 @@
 API calls to Dojot.
 """
 import json
-from typing import Callable, List, Dict
+from typing import Callable, List
 import requests
 import gevent
 
 from config import CONFIG
-from utils import Utils
-
+from common.utils import Utils
 
 LOGGER = Utils.create_logger("api")
 
@@ -19,10 +18,11 @@ class APICallError(Exception):
     """
 
 
-class DojotAPI():
+class DojotAPI:
     """
     Utility class with API calls to Dojot.
     """
+
     @staticmethod
     def get_jwt() -> str:
         """
@@ -54,7 +54,7 @@ class DojotAPI():
         Parameters:
             jwt: Dojot JWT token
             template_id: template ID to be used by the devices
-            n: total number of devices to be created
+            total: total number of devices to be created
             batch: number of devices to be created in each iteration
         """
         LOGGER.debug("Creating devices...")
@@ -118,7 +118,8 @@ class DojotAPI():
         return result_code, res
 
     @staticmethod
-    def create_device(jwt: str, template_id: str or list, label: str) -> tuple:
+    def create_device(jwt: str, template_id: str or list = None, label: str = None, data: str = None, count: int = None,
+                      verbose: bool = None) -> tuple:
         """
         Create a device in Dojot.
 
@@ -126,30 +127,51 @@ class DojotAPI():
             jwt: JWT authorization.
             template_id: template to be used by the device.
             label: name for the device in Dojot.
+            data: request body. if provided template_id and label is ignored.
+            count: amount of devices registries
+            verbose: Set to True if full device description is to be returned.
 
         Returns the created device ID or a error message.
         """
         LOGGER.debug("Creating device...")
+        if data is None:
+            if template_id is None or label is None:
+                raise APICallError("ERROR: must either provide body field or template_id and label fields")
 
-        if type(template_id) != list:
+        if not isinstance(template_id, list):
             template_id = [template_id]
 
+        # setting url
+        url = "{0}/device".format(CONFIG['dojot']['url'])
+        if count is not None:
+            url = url + "?count=" + str(count)
+            if verbose is not None:
+                url = url + "&verbose=" + str(verbose)
+        else:
+            if verbose is not None:
+                url = url + "?verbose=" + str(verbose)
+
+        # setting args
         args = {
-            "url": "{0}/device".format(CONFIG['dojot']['url']),
+            "url": url,
             "headers": {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer {0}".format(jwt),
             },
-            "data": json.dumps({
+        }
+        if data is None:
+            args["data"] = json.dumps({
                 "templates": template_id,
                 "attrs": {},
                 "label": label,
-            }),
-        }
+            })
+        else:
+            args["data"] = data
 
+        LOGGER.debug("sending request...")
         result_code, res = DojotAPI.call_api(requests.post, args)
 
-        LOGGER.debug("... device created ")
+        LOGGER.debug("...done ")
         return result_code, res
 
     @staticmethod
@@ -415,7 +437,7 @@ class DojotAPI():
             }
         }
 
-        res = DojotAPI.call_api(requests.get, args)
+        _, res = DojotAPI.call_api(requests.get, args)
 
         devices_ids = [device['id'] for device in res['devices']]
 
@@ -481,7 +503,7 @@ class DojotAPI():
 
         Parameters:
             jwt: Dojot JWT token
-
+            template_id: template id
             """
         LOGGER.debug("Retrieving information from a specific template...")
 
@@ -506,8 +528,8 @@ class DojotAPI():
 
         Parameters:
             jwt: Dojot JWT token
+            template_id: template id
             attrs: optional parameters
-
             """
         LOGGER.debug("Retrieving template...")
 
@@ -534,6 +556,7 @@ class DojotAPI():
             jwt: JWT authorization.
             template_id: template to be used by the device.
             label: name for the device in Dojot.
+            attrs: optional parameters
 
         Returns the created device ID or a error message.
         """
@@ -592,7 +615,7 @@ class DojotAPI():
 
         Parameters:
             jwt: JWT authorization.
-
+            device_id: device id
         Returns the created device ID or a error message.
         """
         LOGGER.debug("Listing device info...")
@@ -732,7 +755,7 @@ class DojotAPI():
         return loads
 
     @staticmethod
-    def call_api(func: Callable[..., requests.Response], args: dict) -> Dict:
+    def call_api(func: Callable[..., requests.Response], args: dict) -> tuple:
         """
         Calls the Dojot API using `func` and `args`.
 
